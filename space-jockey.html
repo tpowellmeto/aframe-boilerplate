@@ -1,48 +1,109 @@
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>Space - The final frontier!</title>
     <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tweenjs/0.6.2/tweenjs.min.js"></script>
-  </head>
-  <body>
-  <script>
+</head>
+<body>
+<script>
     // Or inline before the <a-scene>.
     AFRAME.registerComponent('satellite', {
-      schema: {
-      },
-      init: function () {
-        //constructor
-        console.log("foo");
-        this.getISSPos = function() {
-        this.position = THREE.Vector3
+        schema: {},
+        init: function () {
+            //constructor
+            console.log("foo");
+
+            var el = this.el;
+            this.el.setAttribute("position", {x: 0, y: 0, z: 40});
+
+            var getISSPos = function () {
+                return new Promise(function (resolve, reject) {
+                    var oReq = new XMLHttpRequest();
+                    oReq.addEventListener("load", function () {
+                        resolve(JSON.parse(this.responseText));
+                    });
+                    oReq.addEventListener("error", function () {
+                        reject(this.responseText);
+                    });
+                    oReq.open("GET", "https://api.wheretheiss.at/v1/satellites/25544");
+                    oReq.send();
+                });
+            };
+
+            function convertLatLng(lat, lon, alt) {
+                var cosLat = Math.cos(lat * Math.PI / 180.0);
+                var sinLat = Math.sin(lat * Math.PI / 180.0);
+                var cosLon = Math.cos(lon * Math.PI / 180.0);
+                var sinLon = Math.sin(lon * Math.PI / 180.0);
+                var rad = 6.731;
+                var x = rad * cosLat * cosLon;
+                var y = rad * cosLat * sinLon;
+                var z = rad * sinLat;
+                return new THREE.Vector3(x, y, z);
+            }
+
+
+            setInterval(function () {
+                getISSPos()
+                        .then(function (res) {
+                            var lat = res.latitude;
+                            var lng = res.longitude;
+                            var alt = res.altitude;
+                            var currentPos = el.object3D.position;
+                            var nextPos = convertLatLng(lat, lng, ((alt / 1000) + 6.731));
+
+
+                            console.log("current:", currentPos);
+                            console.log("next:", nextPos);
+
+                            var tween = new TWEEN.Tween(currentPos)
+                                    .to(nextPos, 5000)
+                                    .onUpdate(function () {
+                                        el.setAttribute("position", {
+                                            x: currentPos.x,
+                                            y: currentPos.y,
+                                            z: currentPos.z
+                                        });
+
+                                    })
+                                    .start();
+
+                        })
+                        .catch(function (err) {
+                            console.error(err);
+                        })
+            }, 5000);
+
+        },
+        tick: function (time) {
+            //updates
+            TWEEN.update(time);
+
         }
-
-      },
-      tick: function(time) {
-        //updates
-        console.log("bar");
-
-
-      }
     });
-  </script>
+</script>
 
-  <a-scene>
+<a-scene>
 
-    <a-sky src="resources/starfield.png">
+    <!--<a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>-->
+    <!--<a-entity>-->
+    <!--<a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>-->
+    <!--&lt;!&ndash;<a-entity position="5 0 0"></a-entity>&ndash;&gt;-->
+    <!--<a-animation attribute="rotation"-->
+    <!--dur="10000"-->
+    <!--fill="forwards"-->
+    <!--to="0 360 0"-->
+    <!--repeat="indefinite"></a-animation>-->
+    <!--</a-entity>-->
 
-      <a-entity satellite>
-        <camera></camera>
-      </a-entity>
+    <a-sky src="resources/starfield.png"></a-sky>
 
+    <a-entity satellite camera="active:true;" look-controls></a-entity>
 
-      <a-sphere position="0 0 -5" radius="1.25" src="resources/sat.jpg" displacement-map="resources/bump.jpg" displacement-scale="0.02"></a-sphere>
+    <a-sphere position="0 0 0" radius="6.371" src="resources/sat.jpg"></a-sphere>
 
-
-    </a-sky>
-
-  </a-scene>
-  </body>
+</a-scene>
+</body>
 </html>
