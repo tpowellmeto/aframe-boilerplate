@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Space - The final frontier!</title>
+    <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweenjs/0.6.2/tweenjs.min.js"></script>
+  </head>
+  <body>
+  <script>
+    // Or inline before the <a-scene>.
+    AFRAME.registerComponent('satellite', {
+      schema: {
+      },
+      init: function () {
+        //constructor
+        console.log("foo");
+        this.getISSPos = function() {
+        this.position = THREE.Vector3
+        }
+
+      },
+      tick: function(time) {
+        //updates
+        console.log("bar");
+
+
+      }
+    });
+  </script>
+
+  <a-scene>
+
+    <a-sky src="resources/starfield.png">
+
+      <a-entity satellite>
+        <camera></camera>
+      </a-entity>
+
+
+      <a-sphere position="0 0 -5" radius="1.25" src="resources/sat.jpg" displacement-map="resources/bump.jpg" displacement-scale="0.02"></a-sphere>
+
+
+    </a-sky>
+
+  </a-scene>
+  </body>
+</html>
