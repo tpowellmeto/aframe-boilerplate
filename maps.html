@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div id="container"></div>
+
+<script type="text/javascript">
+    window.onload = function () {
+        console.log("hello world!");
+        getTileForLatLng({lat:50,lng:-3}, key).then(function(res){
+           console.log(res);
+            draw(res);
+        });
+    };
+
+
+    function draw(imgData){
+        var b64imgData = btoa(imgData); //Binary to ASCII, where it probably stands for
+        var img = new Image();
+        img.src = "data:image/jpeg;base64," + b64imgData;
+        document.body.appendChild(img); //or append it to something else, just an example
+    }
+
+
+    function createGridFromLatLng(lat, lng, numSteps, stepSize){
+        var array = new Array();
+        var tlx = lng - (numSteps * stepSize);
+        var tly = lat + (numSteps * stepSize);
+        for(var y = 0; y < ((numSteps * 2) + 1); y++) {
+            for(var x = 0; x < ((numSteps * 2) + 1); x++){
+                var latLng = {
+                    lat: tly - (y * stepSize),
+                    lng: tlx + (x * stepSize)
+                };
+                array.push(latLng);
+            }
+        }
+    }
+    function getTileForLatLng(latLng, key) {
+        var mapsUri = "https://api.nasa.gov/planetary/earth/imagery?lon=" + latLng.lng + "&lat=" + latLng.lat + "&cloud_score=False&api_key=" + key;
+        return getUri(mapsUri)
+                .then(function (res) {
+                    return JSON.parse(res);
+                })
+                .then(function(json){
+                    return getUri(json.url);
+                })
+                .catch(function(err){
+                    console.error(err);
+                });
+    }
+    function getUri(uri) {
+        return new Promise(function (resolve, reject) {
+            var oReq = new XMLHttpRequest();
+            oReq.addEventListener("load", function () {
+                resolve(this.response);
+            });
+            oReq.addEventListener("error", function () {
+                reject(this.response);
+            });
+            oReq.open("GET", uri);
+            oReq.send();
+        });
+    }
+
+
+</script>
+
+</body>
+</html>

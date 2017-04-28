@@ -85,24 +85,40 @@
     });
 </script>
 
-<a-scene>
+<script>
+    // Or inline before the <a-scene>.
+    AFRAME.registerComponent('earth', {
+        schema: {},
+        init: function () {
+            //constructor
 
-    <!--<a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>-->
-    <!--<a-entity>-->
-    <!--<a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>-->
-    <!--&lt;!&ndash;<a-entity position="5 0 0"></a-entity>&ndash;&gt;-->
-    <!--<a-animation attribute="rotation"-->
-    <!--dur="10000"-->
-    <!--fill="forwards"-->
-    <!--to="0 360 0"-->
-    <!--repeat="indefinite"></a-animation>-->
-    <!--</a-entity>-->
+            var el = this.el;
+
+            var bump = new THREE.TextureLoader().load( "resources/bump.jpg" );
+            var specular = new THREE.TextureLoader().load( "resources/specular.png" );
+            var sat = new THREE.TextureLoader().load( "resources/sat.jpg" );
+
+            this.geometry = new THREE.SphereBufferGeometry(6.731, 32, 32);
+            this.material = new THREE.MeshPhongMaterial({map: sat, bumpMap: bump, specularMap: specular});
+            this.mesh = new THREE.Mesh(this.geometry, this.material);
+
+            el.setObject3D('mesh', this.mesh);
+
+        }
+    });
+</script>
+
+<a-scene>
 
     <a-sky src="resources/starfield.png"></a-sky>
 
     <a-entity satellite camera="active:true;" look-controls></a-entity>
 
-    <a-sphere position="0 0 0" radius="6.371" src="resources/sat.jpg"></a-sphere>
+    <a-entity light="type: point; color: #FFFFFF; intensity: 1.0" position="0 0 150000"></a-entity>
+
+    <a-entity light="type: ambient; intensity: 0.2; color: #BBB"></a-entity>
+
+    <a-entity earth ></a-entity>
 
 </a-scene>
 </body>
